@@ -32,7 +32,7 @@ tabs.forEach(tab => {
 
 // --- API Helper ---
 async function callAI(jobDescription, phase) {
-  const response = await fetch('/.netlify/functions/groq', {
+  const response = await fetch('/.netlify/functions/ai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ jobDescription, phase })
@@ -44,12 +44,10 @@ async function callAI(jobDescription, phase) {
   }
   
   const data = await response.json();
-  const content = data.choices[0].message.content;
+  const content = data.content;
   
   if (phase === 'analyze') {
-    // Sometimes AI wraps JSON in markdown blocks
-    const cleanContent = content.replace(/^```json/m, '').replace(/```$/m, '').trim();
-    return JSON.parse(cleanContent);
+    return JSON.parse(content);
   }
   return content;
 }

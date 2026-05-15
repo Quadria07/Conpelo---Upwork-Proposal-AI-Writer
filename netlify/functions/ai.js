@@ -18,13 +18,13 @@ export const handler = async (event) => {
 
   try {
     const { jobDescription, phase } = JSON.parse(event.body);
-    const apiKey = process.env.GROQ_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
       return {
         statusCode: 500,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'Server configuration error: API key missing.' })
+        body: JSON.stringify({ error: 'Server configuration error: Gemini API key missing.' })
       };
     }
 
@@ -34,12 +34,8 @@ export const handler = async (event) => {
       try {
         const filePath = path.join(dataDir, `${file}.txt`);
         if (fs.existsSync(filePath)) {
-          let content = fs.readFileSync(filePath, 'utf8');
-          // Keep it around 4000 chars - safe and smart
-          if (content.length > 4000) {
-            content = content.substring(0, 4000);
-          }
-          return content;
+          // NO MORE TRUNCATION - Gemini can handle it!
+          return fs.readFileSync(filePath, 'utf8');
         }
         return "";
       } catch (e) {
@@ -63,75 +59,85 @@ export const handler = async (event) => {
     };
 
     const kbContent = `[KNOWLEDGE BASE]
-PROPOSAL EXAMPLES: ${kb.proposal1}\n${kb.proposal2}\n${kb.proposal3}
+PROPOSAL EXAMPLES:
+1: ${kb.proposal1}
+2: ${kb.proposal2}
+3: ${kb.proposal3}
+
 PROPOSAL HOOKS: ${kb.proposalHooks}
 JOB RED FLAGS: ${kb.jobRedFlags}
 NOTES FROM CLASS: ${kb.notesFromClass}
-CLASS PROPOSAL EXAMPLES: ${kb.classProposal1}\n${kb.classProposal2}
+CLASS PROPOSAL EXAMPLES:
+1: ${kb.classProposal1}
+2: ${kb.classProposal2}
+
 MY UPWORK PROFILE: ${kb.upworkProfile}
 MY PORTFOLIO: ${kb.portfolio}
 TONE GUIDE: ${kb.toneGuide}
 PROJECTS AND LINKS: ${kb.projectsAndLinks}
 [END KNOWLEDGE BASE]`;
 
-    const systemPrompt = `You are Conpelo, an expert Upwork assistant. Follow the Knowledge Base and Instructions exactly.`;
+    const systemPrompt = `You are Conpelo, an expert Upwork job evaluator and proposal writer. Your only job is to help the freelancer win. Use the provided Knowledge Base exactly.`;
 
     const analysisInstructions = `
 ANALYSIS INSTRUCTIONS:
-Evaluate against Knowledge Base. Return valid JSON only.
-Structure: {"decision":"APPLY"|"SKIP","confidence":"high"|"medium"|"low","reason":"3-4 sentences","greenFlags":[],"redFlags":[],"matchScore":0-100}`;
+Evaluate the job against the Knowledge Base. Return only valid JSON.
+Structure:
+{
+  "decision": "APPLY" or "SKIP",
+  "confidence": "high", "medium", or "low",
+  "reason": "3-4 sentences",
+  "greenFlags": ["positive signals"],
+  "redFlags": ["warning signs"],
+  "matchScore": number (0-100)
+}`;
 
     const proposalInstructions = `
 PROPOSAL WRITING RULES:
-- No em dashes or semicolons
-- No corporate jargon
-- Reference portfolio and job details
-- 150 to 220 words maximum
-- Unique to this job
+- No em dashes, no semicolons.
+- No corporate jargon (leverage, deliverables, synergy, etc.).
+- Do not start with "I".
+- Reference a specific project from the portfolio.
+- End with a natural question.
+- 150-220 words.
+- Unique to this job.
 `;
 
-    const userContent = `${kbContent}\n\nJOB DESCRIPTION:\n${jobDescription}\n\n${phase === 'analyze' ? analysisInstructions : proposalInstructions}`;
+    const fullPrompt = `${systemPrompt}\n\n${kbContent}\n\nJOB DESCRIPTION:\n${jobDescription}\n\n${phase === 'analyze' ? analysisInstructions : proposalInstructions}`;
 
-    // STRATEGY: Use 8B for fast, cheap analysis to save 70B rate limits for the actual proposal.
-    const model = phase === 'analyze' ? 'llama-3.1-8b-instant' : 'llama-3.3-70b-versatile';
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
     const payload = {
-      model: model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userContent }
-      ],
-      temperature: 0.7,
+      contents: [{ parts: [{ text: fullPrompt }] }],
+      generationConfig: {
+        temperature: 0.7,
+        topP: 0.95,
+        topK: 40,
+        maxOutputTokens: 2048,
+      }
     };
 
     if (phase === 'analyze') {
-      payload.response_format = { type: 'json_object' };
+      payload.generationConfig.responseMimeType = "application/json";
     }
 
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const response = await fetch(geminiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      let errorMsg = `Groq Error: ${response.status}`;
-      if (response.status === 429) {
-        errorMsg = "Slow down! Groq rate limit reached. Please wait 30 seconds and try again.";
-      }
-      
       return { 
         statusCode: response.status, 
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: errorMsg, status: response.status }) 
+        body: JSON.stringify({ error: `Gemini API Error: ${response.status}`, details: errorText }) 
       };
     }
 
     const data = await response.json();
+    const content = data.candidates[0].content.parts[0].text;
     
     return {
       statusCode: 200,
@@ -139,7 +145,7 @@ PROPOSAL WRITING RULES:
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*' 
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ content }),
     };
 
   } catch (error) {
