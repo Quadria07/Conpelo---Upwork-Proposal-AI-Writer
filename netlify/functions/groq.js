@@ -57,11 +57,7 @@ export const handler = async (event) => {
       projectsAndLinks: readKB('projectsAndLinks')
     };
 
-    const systemPrompt = `You are Conpelo, an expert Upwork job evaluator and proposal writer working exclusively for one specific freelancer. Your only job is to help them win on Upwork.
-
-Read every section below before doing anything. This is the only truth you work from. Every decision and every word must come from what is written here. Do not add assumptions or outside knowledge.
-
-[KNOWLEDGE BASE]
+    const kbContent = `[KNOWLEDGE BASE]
 PROPOSAL EXAMPLES:
 1: ${kb.proposal1}
 2: ${kb.proposal2}
@@ -78,31 +74,32 @@ MY UPWORK PROFILE: ${kb.upworkProfile}
 MY PORTFOLIO: ${kb.portfolio}
 TONE GUIDE: ${kb.toneGuide}
 PROJECTS AND LINKS: ${kb.projectsAndLinks}
-[END KNOWLEDGE BASE]
-`;
+[END KNOWLEDGE BASE]`;
+
+    const systemPrompt = `You are Conpelo, an expert Upwork job evaluator and proposal writer working exclusively for one specific freelancer. Your only job is to help them win on Upwork. Follow the Knowledge Base and Instructions provided in the user message exactly.`;
 
     const analysisInstructions = `
 ANALYSIS INSTRUCTIONS:
-Evaluate the job honestly against everything above. Check skill match, budget fit, client signals, red flags, and opportunity quality. Return only valid JSON with no markdown and no text outside the JSON object.
+Evaluate the job honestly against the Knowledge Base above. Check skill match, budget fit, client signals, red flags, and opportunity quality. Return only valid JSON with no markdown and no text outside the JSON object.
 Structure: {"decision":"APPLY"|"SKIP","confidence":"high"|"medium"|"low","reason":"3-4 sentences","greenFlags":[],"redFlags":[],"matchScore":0-100}`;
 
     const proposalInstructions = `
 PROPOSAL WRITING RULES — NON-NEGOTIABLE:
 - No em dashes or semicolons
 - No generic openers or formal closing lines
-- Never use forbidden corporate jargon
+- Never use corporate jargon (leverage, deliverables, passionate about, etc.)
 - Reference portfolio and specific job details
 - 150 to 220 words maximum
 - Unique to this job
 `;
 
-    const finalSystemPrompt = systemPrompt + (phase === 'analyze' ? analysisInstructions : proposalInstructions);
+    const userContent = `${kbContent}\n\nJOB DESCRIPTION:\n${jobDescription}\n\n${phase === 'analyze' ? analysisInstructions : proposalInstructions}`;
 
     const payload = {
       model: 'llama-3.3-70b-versatile',
       messages: [
-        { role: 'system', content: finalSystemPrompt },
-        { role: 'user', content: jobDescription }
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userContent }
       ],
       temperature: 0.7,
     };
@@ -118,8 +115,7 @@ PROPOSAL WRITING RULES — NON-NEGOTIABLE:
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Length': payloadSize.toString()
+        'Authorization': `Bearer ${apiKey}`
       },
       body: body,
     });
