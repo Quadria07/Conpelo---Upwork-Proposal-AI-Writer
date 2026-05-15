@@ -40,7 +40,10 @@ async function callAI(jobDescription, phase) {
   
   if (!response.ok) {
     const errData = await response.json().catch(() => ({}));
-    throw new Error(errData.error || 'API request failed');
+    const error = new Error(errData.error || 'API request failed');
+    error.details = errData.details;
+    error.payloadSize = errData.payloadSize;
+    throw error;
   }
   
   const data = await response.json();
@@ -82,7 +85,8 @@ analyzeBtn.addEventListener('click', async () => {
     saveToHistory(currentJobDescription, currentAnalysis);
   } catch (error) {
     console.error(error);
-    document.getElementById('api-error-text').textContent = error.message || "We couldn't process your request.";
+    const detailMsg = error.payloadSize ? ` (Size: ${Math.round(error.payloadSize/1024)}KB)` : "";
+    document.getElementById('api-error-text').textContent = error.message + detailMsg;
     apiErrorCard.classList.remove('hidden');
   } finally {
     loadingState.classList.add('hidden');
@@ -143,7 +147,8 @@ async function generateProposal() {
     proposalCard.classList.remove('hidden');
   } catch (error) {
     console.error(error);
-    document.getElementById('api-error-text').textContent = error.message || "We couldn't process your request.";
+    const detailMsg = error.payloadSize ? ` (Size: ${Math.round(error.payloadSize/1024)}KB)` : "";
+    document.getElementById('api-error-text').textContent = error.message + detailMsg;
     apiErrorCard.classList.remove('hidden');
   } finally {
     loadingState.classList.add('hidden');
