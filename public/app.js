@@ -43,6 +43,7 @@ async function callAI(jobDescription, phase) {
     const error = new Error(errData.error || 'API request failed');
     error.details = errData.details;
     error.payloadSize = errData.payloadSize;
+    error.kbInfo = errData.kbInfo;
     throw error;
   }
   
@@ -86,7 +87,8 @@ analyzeBtn.addEventListener('click', async () => {
   } catch (error) {
     console.error(error);
     const detailMsg = error.payloadSize ? ` (Size: ${Math.round(error.payloadSize/1024)}KB)` : "";
-    document.getElementById('api-error-text').textContent = error.message + detailMsg;
+    const kbMsg = error.kbInfo ? `\n[${error.kbInfo}]` : "";
+    document.getElementById('api-error-text').textContent = error.message + detailMsg + kbMsg;
     apiErrorCard.classList.remove('hidden');
   } finally {
     loadingState.classList.add('hidden');
@@ -148,7 +150,8 @@ async function generateProposal() {
   } catch (error) {
     console.error(error);
     const detailMsg = error.payloadSize ? ` (Size: ${Math.round(error.payloadSize/1024)}KB)` : "";
-    document.getElementById('api-error-text').textContent = error.message + detailMsg;
+    const kbMsg = error.kbInfo ? `\n[${error.kbInfo}]` : "";
+    document.getElementById('api-error-text').textContent = error.message + detailMsg + kbMsg;
     apiErrorCard.classList.remove('hidden');
   } finally {
     loadingState.classList.add('hidden');
