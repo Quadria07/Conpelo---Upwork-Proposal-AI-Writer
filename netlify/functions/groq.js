@@ -35,9 +35,9 @@ export const handler = async (event) => {
         const filePath = path.join(dataDir, `${file}.txt`);
         if (fs.existsSync(filePath)) {
           let content = fs.readFileSync(filePath, 'utf8');
-          // Aggressive truncation to 3000 chars to stay under Groq tier limits
-          if (content.length > 3000) {
-            content = content.substring(0, 3000);
+          // Keep it around 4000 chars - safe and smart
+          if (content.length > 4000) {
+            content = content.substring(0, 4000);
           }
           return content;
         }
@@ -74,16 +74,29 @@ TONE GUIDE: ${kb.toneGuide}
 PROJECTS AND LINKS: ${kb.projectsAndLinks}
 [END KNOWLEDGE BASE]`;
 
-    const systemPrompt = `You are Conpelo, an expert Upwork job evaluator and proposal writer. Follow the Knowledge Base and Instructions exactly.`;
+    const systemPrompt = `You are Conpelo, an expert Upwork assistant. Follow the Knowledge Base and Instructions exactly.`;
 
-    const instructions = phase === 'analyze' 
-      ? 'ANALYSIS: Return JSON with decision (APPLY/SKIP), confidence, reason, greenFlags, redFlags, matchScore.'
-      : 'PROPOSAL: Write 150-220 words, no jargon, no semicolons, reference portfolio.';
+    const analysisInstructions = `
+ANALYSIS INSTRUCTIONS:
+Evaluate against Knowledge Base. Return valid JSON only.
+Structure: {"decision":"APPLY"|"SKIP","confidence":"high"|"medium"|"low","reason":"3-4 sentences","greenFlags":[],"redFlags":[],"matchScore":0-100}`;
 
-    const userContent = `${kbContent}\n\nJOB DESCRIPTION:\n${jobDescription}\n\n${instructions}`;
+    const proposalInstructions = `
+PROPOSAL WRITING RULES:
+- No em dashes or semicolons
+- No corporate jargon
+- Reference portfolio and job details
+- 150 to 220 words maximum
+- Unique to this job
+`;
+
+    const userContent = `${kbContent}\n\nJOB DESCRIPTION:\n${jobDescription}\n\n${phase === 'analyze' ? analysisInstructions : proposalInstructions}`;
+
+    // STRATEGY: Use 8B for fast, cheap analysis to save 70B rate limits for the actual proposal.
+    const model = phase === 'analyze' ? 'llama-3.1-8b-instant' : 'llama-3.3-70b-versatile';
 
     const payload = {
-      model: 'llama-3.3-70b-versatile',
+      model: model,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userContent }
@@ -95,29 +108,26 @@ PROJECTS AND LINKS: ${kb.projectsAndLinks}
       payload.response_format = { type: 'json_object' };
     }
 
-    const body = JSON.stringify(payload);
-    const payloadSize = Buffer.byteLength(body);
-
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
-      body: body,
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
+      let errorMsg = `Groq Error: ${response.status}`;
+      if (response.status === 429) {
+        errorMsg = "Slow down! Groq rate limit reached. Please wait 30 seconds and try again.";
+      }
+      
       return { 
         statusCode: response.status, 
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          error: `Groq API Error: ${response.status}`, 
-          details: errorText,
-          payloadSize: payloadSize,
-          kbInfo: Object.keys(kb).map(k => `${k}(${kb[k].length})`).join(', ')
-        }) 
+        body: JSON.stringify({ error: errorMsg, status: response.status }) 
       };
     }
 
@@ -136,7 +146,7 @@ PROJECTS AND LINKS: ${kb.projectsAndLinks}
     return { 
       statusCode: 500, 
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: `Function Error: ${error.message}` }) 
+      body: JSON.stringify({ error: `Server Error: ${error.message}` }) 
     };
   }
 };
