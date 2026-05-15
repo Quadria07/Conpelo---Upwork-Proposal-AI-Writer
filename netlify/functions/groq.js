@@ -28,16 +28,17 @@ export const handler = async (event) => {
       };
     }
 
-    // Load Knowledge Base from local files
-    // In Netlify, included_files are usually relative to the project root or the function
-    // We'll try to find them in the data folder we created
-    const dataDir = path.join(process.cwd(), 'netlify', 'functions', 'data');
+    // Use __dirname for more reliable pathing in Lambda
+    const dataDir = path.resolve(__dirname, 'data');
     
     const readKB = (file) => {
       try {
-        return fs.readFileSync(path.join(dataDir, `${file}.txt`), 'utf8');
+        const filePath = path.join(dataDir, `${file}.txt`);
+        if (fs.existsSync(filePath)) {
+          return fs.readFileSync(filePath, 'utf8');
+        }
+        return "";
       } catch (e) {
-        console.error(`Error reading ${file}.txt:`, e.message);
         return "";
       }
     };
@@ -127,6 +128,8 @@ PROPOSAL WRITING RULES — NON-NEGOTIABLE:
       payload.response_format = { type: 'json_object' };
     }
 
+    const payloadSize = JSON.stringify(payload).length;
+
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -140,7 +143,12 @@ PROPOSAL WRITING RULES — NON-NEGOTIABLE:
       const errorText = await response.text();
       return { 
         statusCode: response.status, 
-        body: JSON.stringify({ error: `Groq API Error: ${response.status}`, details: errorText }) 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          error: `Groq API Error: ${response.status}`, 
+          details: errorText,
+          payloadSize: payloadSize 
+        }) 
       };
     }
 
@@ -156,11 +164,10 @@ PROPOSAL WRITING RULES — NON-NEGOTIABLE:
     };
 
   } catch (error) {
-    console.error("Function Error:", error);
     return { 
       statusCode: 500, 
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: "Internal server error." }) 
+      body: JSON.stringify({ error: `Function Error: ${error.message}` }) 
     };
   }
 };
