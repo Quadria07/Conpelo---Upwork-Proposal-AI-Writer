@@ -1,32 +1,3 @@
-// --- Knowledge Base State ---
-let knowledgeBase = {};
-
-async function loadKnowledgeBase() {
-  const files = [
-    'proposal1', 'proposal2', 'proposal3', 'proposalHooks', 
-    'jobRedFlags', 'notesFromClass', 'classProposal1', 
-    'classProposal2', 'upworkProfile', 'portfolio', 
-    'toneGuide', 'projectsAndLinks'
-  ];
-  
-  for (const file of files) {
-    try {
-      const res = await fetch(`/data/${file}.txt`);
-      if (res.ok) {
-        knowledgeBase[file] = await res.text();
-      } else {
-        knowledgeBase[file] = "";
-      }
-    } catch (e) {
-      console.error(`Failed to load ${file}.txt`, e);
-      knowledgeBase[file] = "";
-    }
-  }
-}
-
-// Load it immediately when the script runs
-loadKnowledgeBase();
-
 // --- UI Elements ---
 const tabs = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
@@ -48,82 +19,6 @@ const clearHistoryBtn = document.getElementById('clear-history-btn');
 let currentJobDescription = "";
 let currentAnalysis = null;
 
-// --- Prompts ---
-function getBaseSystemPrompt() {
-  return `You are Conpelo, an expert Upwork job evaluator and proposal writer working exclusively for one specific freelancer. Your only job is to help them win on Upwork.
-
-Read every section below before doing anything. This is the only truth you work from. Every decision and every word must come from what is written here. Do not add assumptions or outside knowledge.
-
-[KNOWLEDGE BASE]
-
-PROPOSAL EXAMPLES — study the style, tone, length, and structure. Write every proposal in this same voice:
-Example 1:
-${knowledgeBase.proposal1}
-Example 2:
-${knowledgeBase.proposal2}
-Example 3:
-${knowledgeBase.proposal3}
-
-PROPOSAL HOOKS — this is how to open every proposal. Study these and use this approach:
-${knowledgeBase.proposalHooks}
-
-JOB RED FLAGS — if any of these appear in a job post, lean strongly toward SKIP:
-${knowledgeBase.jobRedFlags}
-
-NOTES FROM CLASS ABOUT JOBS — the freelancer's own rules about which jobs to take:
-${knowledgeBase.notesFromClass}
-
-CLASS PROPOSAL EXAMPLES — more real examples to reinforce tone and approach:
-Class Example 1:
-${knowledgeBase.classProposal1}
-Class Example 2:
-${knowledgeBase.classProposal2}
-
-MY UPWORK PROFILE — who this freelancer is, their skills, background, experience level:
-${knowledgeBase.upworkProfile}
-
-MY PORTFOLIO — what they have built and can show clients:
-${knowledgeBase.portfolio}
-
-TONE AND WRITING STYLE — follow every rule here without any exception:
-${knowledgeBase.toneGuide}
-
-MY PROJECTS AND LINKS — specific work to reference in proposals when relevant:
-${knowledgeBase.projectsAndLinks}
-[END KNOWLEDGE BASE]
-`;
-}
-
-const analysisInstructions = `
-ANALYSIS INSTRUCTIONS:
-Evaluate the job honestly against everything above. Check skill match, budget fit, client signals, red flags, and opportunity quality. Return only valid JSON with no markdown and no text outside the JSON object.
-Use this strict structure:
-{
-  "decision": "APPLY" or "SKIP",
-  "confidence": "high", "medium", or "low",
-  "reason": "3 to 4 plain sentences explaining the decision",
-  "greenFlags": ["positive signal 1"],
-  "redFlags": ["warning sign 1"],
-  "matchScore": number between 0 and 100
-}`;
-
-const proposalInstructions = `
-PROPOSAL WRITING RULES — NON-NEGOTIABLE:
-- No em dashes anywhere
-- No semicolons
-- Never use: "I hope this finds you well", "I am reaching out", "leverage", "deliverables", "passionate about", "synergy", "going forward", "look no further", "I would love the opportunity", "I am confident that", "as per your requirements", "touch base", "circle back"
-- Do not start with the word "I"
-- No bullet points in the proposal body
-- No generic openers
-- No formal closing lines
-- Open with something pulled directly from their specific job post
-- Reference one real project from the portfolio that fits their need
-- End with one natural conversational question or soft next step
-- 150 to 220 words maximum
-- Write like a confident human emailing someone, not a cover letter
-- Every proposal must be completely unique to that exact job
-`;
-
 // --- Tab Logic ---
 tabs.forEach(tab => {
   tab.addEventListener('click', () => {
@@ -136,21 +31,22 @@ tabs.forEach(tab => {
 });
 
 // --- API Helper ---
-async function callGrok(messages, requireJson = false) {
+async function callAI(jobDescription, phase) {
   const response = await fetch('/.netlify/functions/groq', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages, requireJson })
+    body: JSON.stringify({ jobDescription, phase })
   });
   
   if (!response.ok) {
-    throw new Error('API request failed');
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.error || 'API request failed');
   }
   
   const data = await response.json();
   const content = data.choices[0].message.content;
   
-  if (requireJson) {
+  if (phase === 'analyze') {
     // Sometimes AI wraps JSON in markdown blocks
     const cleanContent = content.replace(/^```json/m, '').replace(/```$/m, '').trim();
     return JSON.parse(cleanContent);
@@ -181,17 +77,12 @@ analyzeBtn.addEventListener('click', async () => {
   loadingState.classList.remove('hidden');
   
   try {
-    const systemPrompt = getBaseSystemPrompt() + analysisInstructions;
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: currentJobDescription }
-    ];
-    
-    currentAnalysis = await callGrok(messages, true);
+    currentAnalysis = await callAI(currentJobDescription, 'analyze');
     renderVerdict(currentAnalysis);
     saveToHistory(currentJobDescription, currentAnalysis);
   } catch (error) {
     console.error(error);
+    document.getElementById('api-error-text').textContent = error.message || "We couldn't process your request.";
     apiErrorCard.classList.remove('hidden');
   } finally {
     loadingState.classList.add('hidden');
@@ -242,13 +133,7 @@ async function generateProposal() {
   loadingState.classList.remove('hidden');
   
   try {
-    const systemPrompt = getBaseSystemPrompt() + proposalInstructions;
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: currentJobDescription }
-    ];
-    
-    const proposal = await callGrok(messages, false);
+    const proposal = await callAI(currentJobDescription, 'propose');
     
     proposalOutput.textContent = proposal;
     
@@ -258,6 +143,7 @@ async function generateProposal() {
     proposalCard.classList.remove('hidden');
   } catch (error) {
     console.error(error);
+    document.getElementById('api-error-text').textContent = error.message || "We couldn't process your request.";
     apiErrorCard.classList.remove('hidden');
   } finally {
     loadingState.classList.add('hidden');

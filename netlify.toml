@@ -3,6 +3,9 @@
   publish = "public"
   functions = "netlify/functions"
 
+[functions]
+  included_files = ["netlify/functions/data/*.txt"]
+
 [dev]
   command = ""
   publish = "public"
