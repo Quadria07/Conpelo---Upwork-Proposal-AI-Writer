@@ -34,12 +34,7 @@ export const handler = async (event) => {
       try {
         const filePath = path.join(dataDir, `${file}.txt`);
         if (fs.existsSync(filePath)) {
-          let content = fs.readFileSync(filePath, 'utf8');
-          // Truncate to 5000 chars to avoid 413
-          if (content.length > 5000) {
-            content = content.substring(0, 5000) + "... [Truncated for size]";
-          }
-          return content;
+          return fs.readFileSync(filePath, 'utf8');
         }
         return "";
       } catch (e) {
@@ -81,11 +76,11 @@ TONE GUIDE: ${kb.toneGuide}
 PROJECTS AND LINKS: ${kb.projectsAndLinks}
 [END KNOWLEDGE BASE]`;
 
-    const systemPrompt = `You are Conpelo, an expert Upwork job evaluator and proposal writer. Follow the Knowledge Base and Instructions provided exactly.`;
+    const systemPrompt = `You are Conpelo, an expert Upwork job evaluator and proposal writer. Follow the Knowledge Base and Instructions exactly.`;
 
     const analysisInstructions = `
 ANALYSIS INSTRUCTIONS:
-Evaluate the job against the Knowledge Base. Return only valid JSON.
+Evaluate against Knowledge Base. Return valid JSON only.
 Structure: {"decision":"APPLY"|"SKIP","confidence":"high"|"medium"|"low","reason":"3-4 sentences","greenFlags":[],"redFlags":[],"matchScore":0-100}`;
 
     const proposalInstructions = `
@@ -100,7 +95,7 @@ PROPOSAL WRITING RULES:
     const userContent = `${kbContent}\n\nJOB DESCRIPTION:\n${jobDescription}\n\n${phase === 'analyze' ? analysisInstructions : proposalInstructions}`;
 
     const payload = {
-      model: 'llama-3.3-70b-versatile',
+      model: 'llama-3.1-8b-instant',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userContent }
