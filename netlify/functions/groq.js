@@ -34,7 +34,12 @@ export const handler = async (event) => {
       try {
         const filePath = path.join(dataDir, `${file}.txt`);
         if (fs.existsSync(filePath)) {
-          return fs.readFileSync(filePath, 'utf8');
+          let content = fs.readFileSync(filePath, 'utf8');
+          // Aggressive truncation to 3000 chars to stay under Groq tier limits
+          if (content.length > 3000) {
+            content = content.substring(0, 3000);
+          }
+          return content;
         }
         return "";
       } catch (e) {
@@ -58,18 +63,11 @@ export const handler = async (event) => {
     };
 
     const kbContent = `[KNOWLEDGE BASE]
-PROPOSAL EXAMPLES:
-1: ${kb.proposal1}
-2: ${kb.proposal2}
-3: ${kb.proposal3}
-
+PROPOSAL EXAMPLES: ${kb.proposal1}\n${kb.proposal2}\n${kb.proposal3}
 PROPOSAL HOOKS: ${kb.proposalHooks}
 JOB RED FLAGS: ${kb.jobRedFlags}
 NOTES FROM CLASS: ${kb.notesFromClass}
-CLASS PROPOSAL EXAMPLES:
-1: ${kb.classProposal1}
-2: ${kb.classProposal2}
-
+CLASS PROPOSAL EXAMPLES: ${kb.classProposal1}\n${kb.classProposal2}
 MY UPWORK PROFILE: ${kb.upworkProfile}
 MY PORTFOLIO: ${kb.portfolio}
 TONE GUIDE: ${kb.toneGuide}
@@ -78,24 +76,14 @@ PROJECTS AND LINKS: ${kb.projectsAndLinks}
 
     const systemPrompt = `You are Conpelo, an expert Upwork job evaluator and proposal writer. Follow the Knowledge Base and Instructions exactly.`;
 
-    const analysisInstructions = `
-ANALYSIS INSTRUCTIONS:
-Evaluate against Knowledge Base. Return valid JSON only.
-Structure: {"decision":"APPLY"|"SKIP","confidence":"high"|"medium"|"low","reason":"3-4 sentences","greenFlags":[],"redFlags":[],"matchScore":0-100}`;
+    const instructions = phase === 'analyze' 
+      ? 'ANALYSIS: Return JSON with decision (APPLY/SKIP), confidence, reason, greenFlags, redFlags, matchScore.'
+      : 'PROPOSAL: Write 150-220 words, no jargon, no semicolons, reference portfolio.';
 
-    const proposalInstructions = `
-PROPOSAL WRITING RULES:
-- No em dashes/semicolons
-- No corporate jargon
-- Reference portfolio and job details
-- 150-220 words
-- Unique to this job
-`;
-
-    const userContent = `${kbContent}\n\nJOB DESCRIPTION:\n${jobDescription}\n\n${phase === 'analyze' ? analysisInstructions : proposalInstructions}`;
+    const userContent = `${kbContent}\n\nJOB DESCRIPTION:\n${jobDescription}\n\n${instructions}`;
 
     const payload = {
-      model: 'llama-3.1-8b-instant',
+      model: 'llama-3.3-70b-versatile',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userContent }
