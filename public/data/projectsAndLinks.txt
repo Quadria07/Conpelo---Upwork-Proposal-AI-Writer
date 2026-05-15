@@ -1,0 +1,156 @@
+L1 District
+
+A modern landing and investment platform for a smart city
+initiative, built to communicate infrastructure, vision, and value to
+investors and stakeholders with a focus on performance,
+scalability, and secure data handling.
+
+REACT
+
+TYPESCRIPT
+
+VITE
+
+TAILWIND CSS
+
+FRAMER MOTION
+https://l1district.com/
+
+ExamCraft Al
+
+An intelligent study platform that leverages Al to transform raw
+educational materials into structured exam simulations. It
+features automated PDF/Word parsing, performance analytics,
+and personalized feedback loops for students.
+
+REACT
+
+VITE
+
+TAILWIND CSS
+
+AI INTEGRATION
+
+DATA VISUALIZATION
+https://examcraft-ai-cbt.netlify.app/
+
+Check My Grade
+
+A secure web app for students to access and track academic
+performance, with role-based access control and safe data
+handling between client and backend.
+
+ROLE-BASED ACCESS
+
+AUTH
+
+SUPABASE
+
+TAILWIND CSS
+https://checkmygrade.com.ng/
+
+Empire Serenity Suites
+
+A luxury hospitality website built to showcase serviced
+apartments and support seamless bookings, with a focus on
+performance, usability, and secure user interactions.
+
+WORDPRESS
+
+MYSQL
+
+PERFORMANCE OPTIMIZATION
+
+PHP
+
+CUSTOM PLUGIN
+https://empireserenitysuitesltd.com/
+
+Start
+
+CV Builder Web App
+
+Enables users to create customizable CVs with real-time previews
+and secure PDF downloads, minimizing data exposure during
+document processing.
+
+INPUT VALIDATION
+
+SECURE EXPORT
+
+REACT
+
+TYPESCRIPT
+https://cv-builder-pro-qa.vercel.app/
+
+Kingkam Ventures
+
+KingKam Ventures is a trusted platform connecting individuals
+and businesses across Nigeria, providing accommodation
+solutions and a thriving marketplace.
+
+PHP
+
+WORDPRESS
+
+MYSQL
+
+CUSTOM PLUGIN
+https://kingkamventures.com/
+
+Security Header Checker
+
+A Chrome Extension that inspects the active browser tab for
+HTTPS enforcement and key security response headers (CSP,
+HSTS), built with Manifest V3 and a least-privilege architecture
+using only native browser APIs.
+
+CHROME EXTENSION
+
+OWASP
+
+MANIFEST V3
+
+JAVASCRIPT
+
+SECURITY HEADERS
+
+
+
+
+Real-Time Network Intrusion Detection
+
+Anomaly detection system using Isolation Forest to identify
+suspicious network traffic, focused on early threat detection and
+actionable alerts.
+
+PYTHON
+
+SCIKIT-LEARN
+
+SCAPY
+
+THREAT DETECTION
+
+
+Naijahood
+
+Naijahood is a modern web platform designed to connect users
+with curated digital experiences and community-driven content,
+built with a focus on performance, usability, and scalable
+architecture.
+
+WORDPRESS
+
+PHP
+
+MYSQL
+
+CUSTOM PLUGIN
+https://naijahood.com/
+
+
+An e-commerce website built with wordpress
+Faith-inspired apparel for Kingdom entrepreneurs. Every piece carries a message.
+https://roxyezacademy.de/
+

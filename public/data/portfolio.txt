@@ -1,0 +1,264 @@
+
+Quadri Adebisi
+About
+Work
+Skills
+Journey
+Contact
+Quadri
+Adebisi
+I build secure web applications
+that scale, prevent breaches,
+and protect data.
+
+Application Security Engineer | Web Developer
+
+View Selected Work →
+Contact Me →
+Principles
+
+Security before features
+
+Least privilege always
+
+Protect user data first
+
+Scale without breaking trust
+
+About
+
+Quadri Adebisi - Application Security Engineer
+Security-minded builder
+with a developer's instinct.
+I build web applications and secure them against real-world risks - so they don't just work, but hold up under pressure in production. A web application is more than just code; it's the foundation of trust, reliability, and how users judge a brand.
+
+I work at the intersection of web development and application security to prevent issues before they ship, not after they cause damage. My approach is simple: build it right, secure it early, and defend it properly.
+
+What I do
+
+Secure Web App Development
+Application Security Testing
+Threat Modeling & Hardening
+Security-by-Design Consulting
+Selected Work
+
+Projects & Case Studies
+All
+Web Applications
+Security Work
+Utilities
+01
+L1 District
+L1 District
+A modern landing and investment platform for a smart city initiative, built to communicate infrastructure, vision, and value to investors and stakeholders with a focus on performance, scalability, and secure data handling.
+
+React
+TypeScript
+Vite
+Tailwind CSS
+Framer Motion
+View
+02
+ExamCraft AI
+ExamCraft AI
+An intelligent study platform that leverages AI to transform raw educational materials into structured exam simulations. It features automated PDF/Word parsing, performance analytics, and personalized feedback loops for students.
+
+React
+Vite
+Tailwind CSS
+AI Integration
+Data Visualization
+View
+03
+Check My Grade
+Check My Grade
+A secure web app for students to access and track academic performance, with role-based access control and safe data handling between client and backend.
+
+Auth
+Role-Based Access
+Supabase
+Tailwind CSS
+View
+04
+Empire Serenity Suites
+Empire Serenity Suites
+A luxury hospitality website built to showcase serviced apartments and support seamless bookings, with a focus on performance, usability, and secure user interactions.
+
+WordPress
+PHP
+MySQL
+Custom Plugin
+Performance Optimization
+View
+05
+CV Builder Web App
+CV Builder Web App
+Enables users to create customizable CVs with real-time previews and secure PDF downloads, minimizing data exposure during document processing.
+
+Input Validation
+Secure Export
+React
+TypeScript
+View
+06
+Kingkam Ventures
+Kingkam Ventures
+KingKam Ventures is a trusted platform connecting individuals and businesses across Nigeria, providing accommodation solutions and a thriving marketplace.
+
+WordPress
+PHP
+MySQL
+Custom Plugin
+View
+07
+Security Header Checker
+Security Header Checker
+A Chrome Extension that inspects the active browser tab for HTTPS enforcement and key security response headers (CSP, HSTS), built with Manifest V3 and a least-privilege architecture using only native browser APIs.
+
+Chrome Extension
+Manifest V3
+JavaScript
+Security Headers
+OWASP
+View
+08
+Real-Time Network Intrusion Detection
+Real-Time Network Intrusion Detection
+Anomaly detection system using Isolation Forest to identify suspicious network traffic, focused on early threat detection and actionable alerts.
+
+Python
+Scikit-Learn
+Scapy
+Threat Detection
+View
+09
+Naijahood
+Naijahood
+Naijahood is a modern web platform designed to connect users with curated digital experiences and community-driven content, built with a focus on performance, usability, and scalable architecture.
+
+WordPress
+PHP
+MySQL
+Custom Plugin
+View
+More projects available on request.
+Skills & Capabilities
+
+Security
+OWASP Top 10
+Secure Authentication & Authorization
+API Security
+Vulnerability Assessment / Pentesting
+Application Hardening
+Input Validation & Data Handling
+Logging & Monitoring
+Web Development
+React / TypeScript / Next.js
+HTML / CSS / JavaScript
+Node.js / REST APIs
+Express.js
+MongoDB
+Tailwind CSS / Bootstrap
+Supabase
+WordPress Development
+PHP / MySQL
+Tools & Infrastructure
+Burp Suite
+Git / GitHub
+Linux
+Docker
+Netlify / Vercel
+CI/CD Pipelines
+Payment integration (Paystack)
+Google Analytics
+Site audits & SEO
+Python (Security Scripting)
+Interpersonal Skills
+Team Collaboration
+Critical Thinking
+Teaching & Mentoring
+Project Coordination
+Problem Solving
+Time Management
+Experience
+
+Web Developer
+The Fraternity & Co · Full-time · On-site
+
+Nov 2024 – March 2026
+Build and maintain production web applications with a focus on secure, reliable frontend architecture.
+Develop responsive interfaces using React, TypeScript, HTML, CSS, and JavaScript - ensuring clean structure, accessibility, and performance across devices.
+Integrate security considerations into development by addressing common risks such as improper input handling, insecure auth flows, and client-side exposure.
+Customize and maintain WordPress themes and plugins with secure configuration and controlled access.
+Optimize performance, usability, and stability through clean code practices, testing, and continuous improvements.
+React
+TypeScript
+WordPress
+Web Application Security
+REST APIs
+ICT Instructor
+Btexloop Academy · Full-time · Hybrid
+
+Dec 2022 – Sep 2025
+Deliver hands-on training in web development and foundational cybersecurity with emphasis on secure system thinking.
+Design practical projects involving web technologies, networking concepts, and connected systems - helping learners understand real applications and common security issues.
+Introduce core security concepts: safe data handling, authentication logic, and responsible technology use.
+Support learners through structured problem-solving, project reviews, and technical guidance.
+Teaching & Mentoring
+Web Development
+Cybersecurity Fundamentals
+Technical Intern
+Ministry of Innovation, Science, Technology & Digital Economy · Internship · On-site
+
+Nov 2024 – Jun 2025
+Supported technical initiatives involving web systems, networking, and applied cybersecurity within a public-sector environment.
+Assisted in coordinating and mentoring SIWES/IT students - reviewing projects and guiding structured development and security fundamentals.
+Gained practical exposure to networking, application workflows, and system-level thinking through hands-on tasks.
+Contributed to training sessions covering web development, Python scripting, and introductory cybersecurity.
+Python
+IoT
+Networking
+Mentoring
+Education
+
+Elerinmosa Institute of Technology
+NID, Networking and System Security
+
+Jan 2023 – Sep 2024
+Vulnerability Assessment
+Python
+Network Security
+System Administration
+Ethical Hacking Essential (EC-Council) · Python for Cybersecurity · Certified Cybersecurity Educator Professional
+
+Testimonials
+
+What people say
+Testimonial 1
+Testimonial 2
+Testimonial 3
+Testimonial 4
+Testimonial 5
+Testimonial 1
+Testimonial 2
+Testimonial 3
+Testimonial 4
+Testimonial 5
+Let's build something secure.
+Open to freelance projects, consulting, and collaboration.
+
+Currently available for new projects
+
+Email
+LinkedIn
+GitHub
+WhatsApp
+Name
+Your name
+Email
+you@example.com
+Message
+Tell me about your project
+Send message →
+Quadri Adebisi - © 2026
+Back to top ↑
