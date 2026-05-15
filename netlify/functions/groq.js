@@ -34,7 +34,12 @@ export const handler = async (event) => {
       try {
         const filePath = path.join(dataDir, `${file}.txt`);
         if (fs.existsSync(filePath)) {
-          return fs.readFileSync(filePath, 'utf8');
+          let content = fs.readFileSync(filePath, 'utf8');
+          // Truncate to 5000 chars to avoid 413
+          if (content.length > 5000) {
+            content = content.substring(0, 5000) + "... [Truncated for size]";
+          }
+          return content;
         }
         return "";
       } catch (e) {
@@ -76,20 +81,19 @@ TONE GUIDE: ${kb.toneGuide}
 PROJECTS AND LINKS: ${kb.projectsAndLinks}
 [END KNOWLEDGE BASE]`;
 
-    const systemPrompt = `You are Conpelo, an expert Upwork job evaluator and proposal writer working exclusively for one specific freelancer. Your only job is to help them win on Upwork. Follow the Knowledge Base and Instructions provided in the user message exactly.`;
+    const systemPrompt = `You are Conpelo, an expert Upwork job evaluator and proposal writer. Follow the Knowledge Base and Instructions provided exactly.`;
 
     const analysisInstructions = `
 ANALYSIS INSTRUCTIONS:
-Evaluate the job honestly against the Knowledge Base above. Check skill match, budget fit, client signals, red flags, and opportunity quality. Return only valid JSON with no markdown and no text outside the JSON object.
+Evaluate the job against the Knowledge Base. Return only valid JSON.
 Structure: {"decision":"APPLY"|"SKIP","confidence":"high"|"medium"|"low","reason":"3-4 sentences","greenFlags":[],"redFlags":[],"matchScore":0-100}`;
 
     const proposalInstructions = `
-PROPOSAL WRITING RULES — NON-NEGOTIABLE:
-- No em dashes or semicolons
-- No generic openers or formal closing lines
-- Never use corporate jargon (leverage, deliverables, passionate about, etc.)
-- Reference portfolio and specific job details
-- 150 to 220 words maximum
+PROPOSAL WRITING RULES:
+- No em dashes/semicolons
+- No corporate jargon
+- Reference portfolio and job details
+- 150-220 words
 - Unique to this job
 `;
 
