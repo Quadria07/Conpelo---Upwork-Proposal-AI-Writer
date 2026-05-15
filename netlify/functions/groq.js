@@ -28,7 +28,6 @@ export const handler = async (event) => {
       };
     }
 
-    // Use __dirname for more reliable pathing in Lambda
     const dataDir = path.resolve(__dirname, 'data');
     
     const readKB = (file) => {
@@ -63,11 +62,10 @@ export const handler = async (event) => {
 Read every section below before doing anything. This is the only truth you work from. Every decision and every word must come from what is written here. Do not add assumptions or outside knowledge.
 
 [KNOWLEDGE BASE]
-
 PROPOSAL EXAMPLES:
-Example 1: ${kb.proposal1}
-Example 2: ${kb.proposal2}
-Example 3: ${kb.proposal3}
+1: ${kb.proposal1}
+2: ${kb.proposal2}
+3: ${kb.proposal3}
 
 PROPOSAL HOOKS: ${kb.proposalHooks}
 JOB RED FLAGS: ${kb.jobRedFlags}
@@ -86,31 +84,16 @@ PROJECTS AND LINKS: ${kb.projectsAndLinks}
     const analysisInstructions = `
 ANALYSIS INSTRUCTIONS:
 Evaluate the job honestly against everything above. Check skill match, budget fit, client signals, red flags, and opportunity quality. Return only valid JSON with no markdown and no text outside the JSON object.
-Structure:
-{
-  "decision": "APPLY" or "SKIP",
-  "confidence": "high", "medium", or "low",
-  "reason": "3 to 4 plain sentences explaining the decision",
-  "greenFlags": ["positive signal"],
-  "redFlags": ["warning sign"],
-  "matchScore": number (0-100)
-}`;
+Structure: {"decision":"APPLY"|"SKIP","confidence":"high"|"medium"|"low","reason":"3-4 sentences","greenFlags":[],"redFlags":[],"matchScore":0-100}`;
 
     const proposalInstructions = `
 PROPOSAL WRITING RULES — NON-NEGOTIABLE:
-- No em dashes anywhere
-- No semicolons
-- Never use: "I hope this finds you well", "I am reaching out", "leverage", "deliverables", "passionate about", "synergy", "going forward", "look no further", "I would love the opportunity", "I am confident that", "as per your requirements", "touch base", "circle back"
-- Do not start with the word "I"
-- No bullet points in the proposal body
-- No generic openers
-- No formal closing lines
-- Open with something pulled directly from their specific job post
-- Reference one real project from the portfolio that fits their need
-- End with one natural conversational question or soft next step
+- No em dashes or semicolons
+- No generic openers or formal closing lines
+- Never use forbidden corporate jargon
+- Reference portfolio and specific job details
 - 150 to 220 words maximum
-- Write like a confident human emailing someone, not a cover letter
-- Every proposal must be completely unique to that exact job
+- Unique to this job
 `;
 
     const finalSystemPrompt = systemPrompt + (phase === 'analyze' ? analysisInstructions : proposalInstructions);
@@ -128,15 +111,17 @@ PROPOSAL WRITING RULES — NON-NEGOTIABLE:
       payload.response_format = { type: 'json_object' };
     }
 
-    const payloadSize = JSON.stringify(payload).length;
+    const body = JSON.stringify(payload);
+    const payloadSize = Buffer.byteLength(body);
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
+        'Content-Length': payloadSize.toString()
       },
-      body: JSON.stringify(payload),
+      body: body,
     });
 
     if (!response.ok) {
@@ -147,7 +132,8 @@ PROPOSAL WRITING RULES — NON-NEGOTIABLE:
         body: JSON.stringify({ 
           error: `Groq API Error: ${response.status}`, 
           details: errorText,
-          payloadSize: payloadSize 
+          payloadSize: payloadSize,
+          kbInfo: Object.keys(kb).map(k => `${k}(${kb[k].length})`).join(', ')
         }) 
       };
     }
